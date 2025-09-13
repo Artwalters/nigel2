@@ -1,3 +1,97 @@
+// Custom Cursor
+document.addEventListener('DOMContentLoaded', function() {
+    const cursor = document.querySelector('.custom-cursor');
+    let mouseX = 0;
+    let mouseY = 0;
+    let cursorX = 0;
+    let cursorY = 0;
+    
+    // Only initialize cursor on desktop
+    if (window.innerWidth > 768) {
+        // Track mouse position
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        // Smooth cursor following with delay
+        function updateCursor() {
+            cursorX += (mouseX - cursorX) * 0.15; // 0.15 creates subtle delay
+            cursorY += (mouseY - cursorY) * 0.15;
+            
+            cursor.style.left = cursorX + 'px';
+            cursor.style.top = cursorY + 'px';
+            
+            requestAnimationFrame(updateCursor);
+        }
+        
+        updateCursor();
+        
+        // Hover effects for clickable elements
+        const hoverElements = document.querySelectorAll('a, button, .package-btn, .nav-link, .nav-brand');
+        
+        hoverElements.forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                cursor.classList.add('hover');
+            });
+            
+            element.addEventListener('mouseleave', () => {
+                cursor.classList.remove('hover');
+            });
+        });
+    }
+});
+
+// Navigation scroll trigger
+document.addEventListener('DOMContentLoaded', function() {
+    const navbarTop = document.querySelector('.navbar');
+    const navbarBottom = document.querySelector('.navbar-bottom');
+    
+    if (navbarTop && navbarBottom) {
+        // Initially hide both navbars
+        navbarTop.classList.add('hidden');
+        navbarBottom.classList.remove('visible');
+        
+        let ticking = false;
+        
+        function updateNavbars() {
+            const scrollY = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            const distanceFromBottom = documentHeight - (scrollY + windowHeight);
+            
+            // Top navbar: Show only when at very top (within 50px)
+            if (scrollY <= 50) {
+                navbarTop.classList.remove('hidden');
+            } else {
+                navbarTop.classList.add('hidden');
+            }
+            
+            // Bottom navbar: Show only when near bottom (within 100px)
+            if (distanceFromBottom <= 100) {
+                navbarBottom.classList.add('visible');
+            } else {
+                navbarBottom.classList.remove('visible');
+            }
+            
+            ticking = false;
+        }
+        
+        function requestTick() {
+            if (!ticking) {
+                requestAnimationFrame(updateNavbars);
+                ticking = true;
+            }
+        }
+        
+        window.addEventListener('scroll', requestTick);
+        window.addEventListener('resize', requestTick); // Also check on resize
+        
+        // Check initial position
+        updateNavbars();
+    }
+});
+
 // Check if mobile device (excluding iPad for better tablet experience)
 const isMobile = /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || (window.innerWidth <= 768 && !/iPad/i.test(navigator.userAgent));
 
@@ -31,227 +125,9 @@ requestAnimationFrame(raf);
 document.addEventListener('DOMContentLoaded', function() {
     gsap.registerPlugin(ScrollTrigger, Draggable);
     
-    // Header scroll effect - compact at top, wider when scrolled
-    ScrollTrigger.create({
-        trigger: "body",
-        start: "100px top",
-        end: "bottom bottom",
-        onEnter: () => {
-            document.querySelector('.main-header').classList.remove('scrolled');
-        },
-        onLeaveBack: () => {
-            document.querySelector('.main-header').classList.add('scrolled');
-        }
-    });
     
-    // Initially set header as scrolled (compact) at top
-    document.querySelector('.main-header').classList.add('scrolled');
     
-    // Hero social icons scroll effect
-    ScrollTrigger.create({
-        trigger: ".hero",
-        start: "top top",
-        end: "50% top",
-        onEnter: () => {
-            document.querySelector('.hero-social').classList.add('hidden');
-        },
-        onLeaveBack: () => {
-            document.querySelector('.hero-social').classList.remove('hidden');
-        }
-    });
     
-    // Mobile menu functionality with GSAP
-    const menuButton = document.querySelector('.menu-button');
-    const mobileMenu = document.querySelector('.mobile-menu');
-    const menuOverlay = document.querySelector('.mobile-menu-overlay');
-    let isMenuOpen = false;
-    
-    if (menuButton && mobileMenu && menuOverlay) {
-        // Create GSAP timeline for menu animation
-        const tl = gsap.timeline({ paused: true });
-        
-        tl.to(menuOverlay, {
-            duration: 0.4,
-            opacity: 1,
-            visibility: "visible",
-            ease: "power2.out"
-        })
-        .to(mobileMenu, {
-            duration: 0.35,
-            y: "0%",
-            scale: 0.995,
-            ease: "power3.out"
-        }, "-=0.3")
-        .to(mobileMenu, {
-            duration: 0.25,
-            scale: 0.985,
-            x: 5,
-            width: "calc(100vw - 10px)",
-            borderRadius: "4px",
-            ease: "back.out(1.7)"
-        }, "-=0.05");
-        
-        menuButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            const icon = menuButton.querySelector('.menu-button__icon');
-            
-            if (!isMenuOpen) {
-                // Open menu
-                tl.play();
-                gsap.to(icon, { rotation: 45, duration: 0.3, ease: "power2.out" });
-                
-                // Animate menu button to dark theme
-                gsap.to(menuButton, {
-                    backgroundColor: "rgba(0, 0, 0, 0.8)",
-                    borderColor: "rgba(0, 0, 0, 0.2)",
-                    duration: 0.4,
-                    ease: "power2.out",
-                    delay: 0.2
-                });
-                gsap.to(icon, {
-                    color: "#ffffff",
-                    duration: 0.3,
-                    ease: "power2.out",
-                    delay: 0.25
-                });
-                
-                isMenuOpen = true;
-            } else {
-                // Close menu
-                tl.reverse();
-                gsap.to(icon, { rotation: 0, duration: 0.3, ease: "power2.out" });
-                
-                // Animate menu button back to light theme
-                gsap.to(menuButton, {
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
-                    borderColor: "rgba(255, 255, 255, 0.2)",
-                    duration: 0.3,
-                    ease: "power2.out"
-                });
-                gsap.to(icon, {
-                    color: "#ffffff",
-                    duration: 0.2,
-                    ease: "power2.out"
-                });
-                
-                isMenuOpen = false;
-            }
-        });
-        
-        // Close menu when clicking on a menu item
-        const menuItems = document.querySelectorAll('.mobile-menu-item');
-        menuItems.forEach(item => {
-            item.addEventListener('click', () => {
-                closeMenu();
-            });
-        });
-        
-        // Close menu when clicking/touching on overlay
-        menuOverlay.addEventListener('click', closeMenu);
-        menuOverlay.addEventListener('touchstart', closeMenu);
-        
-        // Close menu on scroll
-        let scrollTimeout;
-        window.addEventListener('scroll', () => {
-            if (isMenuOpen) {
-                // Debounce scroll events to prevent excessive calls
-                if (scrollTimeout) clearTimeout(scrollTimeout);
-                scrollTimeout = setTimeout(() => {
-                    closeMenu();
-                }, 50);
-            }
-        });
-        
-        // Function to close menu with animations
-        function closeMenu() {
-            tl.reverse();
-            gsap.to(menuButton.querySelector('.menu-button__icon'), { 
-                rotation: 0, 
-                duration: 0.3, 
-                ease: "power2.out" 
-            });
-            gsap.to(menuButton, {
-                backgroundColor: "rgba(255, 255, 255, 0.1)",
-                borderColor: "rgba(255, 255, 255, 0.2)",
-                duration: 0.3,
-                ease: "power2.out"
-            });
-            gsap.to(menuButton.querySelector('.menu-button__icon'), {
-                color: "#ffffff",
-                duration: 0.2,
-                ease: "power2.out"
-            });
-            isMenuOpen = false;
-        }
-    }
-    
-    // Nigel Info Panel functionality with GSAP
-    const nigelInfoButton = document.getElementById('nigel-info-btn');
-    const nigelInfoPanel = document.querySelector('.nigel-info-panel');
-    const nigelInfoOverlay = document.querySelector('.nigel-info-overlay');
-    const nigelInfoClose = document.querySelector('.nigel-info-close');
-    let isInfoPanelOpen = false;
-    
-    if (nigelInfoButton && nigelInfoPanel && nigelInfoOverlay && nigelInfoClose) {
-        // Create GSAP timeline for info panel animation
-        const infoPanelTL = gsap.timeline({ paused: true });
-        
-        infoPanelTL.to(nigelInfoOverlay, {
-            duration: 0.2,
-            opacity: 1,
-            visibility: "visible",
-            ease: "power2.inOut"
-        })
-        .to(nigelInfoPanel, {
-            duration: 0.3,
-            x: "0%",
-            ease: "power2.inOut"
-        }, "-=0.1");
-        
-        // Open panel when clicking "Over Nigel" button
-        nigelInfoButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            if (!isInfoPanelOpen) {
-                infoPanelTL.play();
-                isInfoPanelOpen = true;
-                
-                // Prevent body scroll
-                document.body.style.overflow = 'hidden';
-            }
-        });
-        
-        // Close panel functions
-        function closeInfoPanel() {
-            infoPanelTL.reverse();
-            isInfoPanelOpen = false;
-            
-            // Restore body scroll
-            document.body.style.overflow = '';
-        }
-        
-        // Close panel when clicking close button
-        nigelInfoClose.addEventListener('click', closeInfoPanel);
-        
-        // Close panel when clicking overlay
-        nigelInfoOverlay.addEventListener('click', closeInfoPanel);
-        
-        // Close panel on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && isInfoPanelOpen) {
-                closeInfoPanel();
-            }
-        });
-        
-        // Close panel when clicking on info panel CTA button
-        const infoPanelCTA = document.querySelector('.nigel-cta-button');
-        if (infoPanelCTA) {
-            infoPanelCTA.addEventListener('click', () => {
-                closeInfoPanel();
-            });
-        }
-    }
     
     // Button text stagger animation
     function createButtonAnimation(button) {
@@ -362,18 +238,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // No initial animation for corner navigation items
     
-    gsap.fromTo('.hero-title', 
-        {
-            opacity: 0,
-            y: 50
-        },
-        {
-            opacity: 1,
-            y: 0,
-            duration: 1.2,
-            ease: 'power3.out'
-        }
-    );
 
     // Intro clients rollout animation - CLEAN VERSION
     
@@ -1364,4 +1228,131 @@ ScrollTrigger.create({
         }
     },
     once: true
+});
+
+// List items stagger animation - Trap effect van links naar rechts
+document.addEventListener('DOMContentLoaded', function() {
+    // Selecteer alle drie de lijsten
+    const lists = [
+        '.about .services-list li',
+        '.philosophy .philosophy-list li',
+        '.onboarding .services-list li'
+    ];
+    
+    lists.forEach(selector => {
+        const items = document.querySelectorAll(selector);
+        
+        if (items.length > 0) {
+            // Set initial state - items zijn onzichtbaar en links gepositioneerd
+            gsap.set(items, {
+                opacity: 0,
+                x: -100,
+                y: -20,
+                transformOrigin: "left center"
+            });
+            
+            // Create the stagger animation
+            gsap.to(items, {
+                scrollTrigger: {
+                    trigger: items[0].closest('ul'),
+                    start: "top 80%",
+                    end: "bottom 60%",
+                    toggleActions: "play none none reverse",
+                    // markers: true // Uncomment voor debugging
+                },
+                opacity: 1,
+                x: 0,
+                y: 0,
+                duration: 0.8,
+                stagger: {
+                    each: 0.12,
+                    from: "start",
+                    ease: "power2.inOut"
+                },
+                ease: "power3.out"
+            });
+        }
+    });
+});
+
+// Bicep emoji hover effect voor footer title
+document.addEventListener('DOMContentLoaded', function() {
+    const followTitle = document.querySelector('.follow-title');
+    const bicepEmoji = document.querySelector('.bicep-emoji');
+    
+    if (followTitle && bicepEmoji) {
+        let mouseX = 0;
+        let emojiX = 0;
+        let centerX = 0;
+        let fixedY = 0;
+        let isHovering = false;
+        let animationScale = 0;
+        
+        // Update title center position
+        function updateTitleCenter() {
+            const titleRect = followTitle.getBoundingClientRect();
+            centerX = titleRect.left + (titleRect.width / 2);
+            fixedY = titleRect.top + (titleRect.height / 2) - 120;
+        }
+        
+        // Initial setup
+        updateTitleCenter();
+        window.addEventListener('resize', updateTitleCenter);
+        window.addEventListener('scroll', updateTitleCenter);
+        
+        // Mouse move handler
+        function handleMouseMove(e) {
+            mouseX = e.clientX;
+        }
+        
+        // Smooth emoji animation
+        function animateEmoji() {
+            if (isHovering) {
+                // Scale in animatie
+                animationScale += (1 - animationScale) * 0.15;
+                
+                // Beweeg van center naar muis positie
+                emojiX += (mouseX - emojiX) * 0.05;
+            } else {
+                // Scale out animatie
+                animationScale += (0 - animationScale) * 0.15;
+                
+                // Beweeg terug naar center
+                emojiX += (centerX - emojiX) * 0.1;
+            }
+            
+            // Positioneer emoji
+            bicepEmoji.style.left = (emojiX - 120) + 'px';
+            bicepEmoji.style.top = fixedY + 'px';
+            
+            // Apply scale en opacity gebaseerd op animationScale
+            bicepEmoji.style.opacity = animationScale;
+            
+            // Subtiele rotatie alleen tijdens hover
+            const rotation = isHovering ? (mouseX - emojiX) * 0.05 : 0;
+            bicepEmoji.style.transform = `scale(${animationScale}) rotate(${rotation}deg)`;
+            
+            requestAnimationFrame(animateEmoji);
+        }
+        
+        // Start animation loop
+        animateEmoji();
+        
+        // Hover events
+        followTitle.addEventListener('mouseenter', function(e) {
+            isHovering = true;
+            updateTitleCenter();
+            // Start vanuit het midden
+            emojiX = centerX;
+            mouseX = e.clientX;
+            document.addEventListener('mousemove', handleMouseMove);
+        });
+        
+        followTitle.addEventListener('mouseleave', function() {
+            isHovering = false;
+            document.removeEventListener('mousemove', handleMouseMove);
+            // Zet muis positie naar center voor smooth terugkeer
+            mouseX = centerX;
+        });
+    }
 });
